@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/core-build/serve.schema.json",
+  "port": 4321,
+  "https": true,
+  "serveConfigurations": {
+    "default": {
+      "pageUrl": "https://contoso.sharepoint.com/sites/mySite/SitePages/myPage.aspx",
+      "customActions": {
+        "92e85838-8b3f-489e-9ef1-e892c880c2fa": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {
+            "SiteSponsorEditorsAADGroupId": "00000000-0000-0000-0000-000000000000",
+            "CopyrightText": "Copyright © {current_year}",
+            "SupportLink": ""
+          }
+        }
+      }
+    }
+  }
+}
