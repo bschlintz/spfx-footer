@@ -3,7 +3,7 @@
   "solution": {
     "name": "Footer",
     "id": "aaa05580-eeba-48ac-800a-9fd424be334a",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -28,7 +28,7 @@
       },
       {
         "resource": "Microsoft Graph",
-        "scope": "GroupMember.Read.All"
+        "scope": "Group.Read.All"
       },
       {
         "resource": "Microsoft Graph",
@@ -38,7 +38,14 @@
         "resource": "Microsoft Graph",
         "scope": "Presence.Read.All"
       }
-    ]
+    ],
+    "developer": {
+      "name": "Contoso",
+      "privacyUrl": "https://contoso.com/privacy",
+      "termsOfUseUrl": "https://contoso.com/terms-of-use",
+      "websiteUrl": "https://contoso.com/my-app",
+      "mpnId": "000000"
+    }
   },
   "paths": {
     "zippedPackage": "solution/footer.sppkg"

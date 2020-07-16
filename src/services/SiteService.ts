@@ -5,7 +5,7 @@ import { LOG_SOURCE } from '../extensions/footer/FooterApplicationCustomizer';
 import { SiteUser } from '../models/SiteUser';
 import { UserRights } from '../models/UserRights';
 import { ConfigListItem } from '../models/ConfigListItem';
-
+import { AadHttpClient } from '@microsoft/sp-http';
 import { setup as pnpSetup } from "@pnp/common";
 import { sp } from "@pnp/sp";
 import { IWebEnsureUserResult } from "@pnp/sp/site-users/";
@@ -13,11 +13,7 @@ import "@pnp/sp/site-users/";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
-import { graph } from "@pnp/graph";
-import "@pnp/graph/users";
-import "@pnp/graph/groups";
 import { SiteStats } from '../models/SiteStats';
-import { SiteAdmins } from '../models/SiteAdmins';
 import { WebStats } from '../models/WebStats';
 
 const CONFIG_LIST_TITLE = "SiteConfig";
@@ -27,6 +23,9 @@ const SITE_PRIMARY_ADMIN_ITEM_TITLE = "SITE_PRIMARY_ADMIN";
 export class SiteService {
   private _context: ExtensionContext;
   private _siteSponsorsAadGroupId: string;
+  private _isOffice365Group: boolean = false;
+  private _office365GroupId: string;
+  private _graphAadClient: AadHttpClient = null;
 
   // In-memory cache
   private _cachedSiteSponsorConfigItem: ConfigListItem = null;
@@ -35,11 +34,22 @@ export class SiteService {
   constructor(context: ExtensionContext, siteSponsorsAadGroupId: string) {
     this._context = context;
     this._siteSponsorsAadGroupId = siteSponsorsAadGroupId;
+    this._isOffice365Group = !!this._context.pageContext.site.group;
+    if (this._isOffice365Group) {
+      this._office365GroupId = this._context.pageContext.site.group.id.toString();
+    }
     pnpSetup({ spfxContext: context });
   }
 
   get spfxContext(): ExtensionContext {
     return this._context || null;
+  }
+
+  private _getGraphAadClient = async (): Promise<AadHttpClient> => {
+    if (!this._graphAadClient) {
+      this._graphAadClient = await this._context.aadHttpClientFactory.getClient('https://graph.microsoft.com');
+    }
+    return this._graphAadClient;
   }
 
   private _getConfigListItem = async (title: string): Promise<ConfigListItem> => {
@@ -68,13 +78,64 @@ export class SiteService {
 
   private _getIsMemberOfGroup = async (groupId: string): Promise<boolean> => {
     try {
-      const result = await graph.me.checkMemberGroups([groupId]);
-      const isMember = result.indexOf(groupId) !== -1;
-      return isMember;
+      const client = await this._getGraphAadClient();
+      let headers: Headers = new Headers();
+      headers.set('Accept', 'application/json');
+      headers.set('Content-Type', 'application/json');
+
+      const body = JSON.stringify({ groupIds: [ groupId ] });
+      const response = await client.post(
+        `https://graph.microsoft.com/v1.0/me/checkMemberGroups`,
+         AadHttpClient.configurations.v1,
+         { headers, body }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        const isMember = result.value.indexOf(groupId) !== -1;
+        return isMember;
+      }
+      else throw new Error(await response.text());
     }
     catch (error) {
       throw new Error(`Unable to check group membership for Group ID '${groupId}'. Error: ${error}`);
     }
+  }
+
+  private _getGroupOwners = async (top: number = 4): Promise<SiteUser[]> => {
+    try {
+      const client = await this._getGraphAadClient();
+      let headers: Headers = new Headers();
+      headers.set('Accept', 'application/json');
+
+      const response = await client.get(
+        `https://graph.microsoft.com/v1.0/groups/${this._office365GroupId}/owners?$select=mail,userPrincipalName,displayName&$top=${top}`,
+        AadHttpClient.configurations.v1,
+        { headers }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        return (result.value as any[]).map<SiteUser>(o => ({
+          email: o.mail,
+          loginName: o.userPrincipalName,
+          title: o.displayName
+        }));
+      }
+      else throw new Error(await response.text());
+    }
+    catch (error) {
+      throw new Error(`Unable to fetch group owners for Group ID '${this._office365GroupId}'. Error: ${error}`);
+    }
+  }
+
+  private _getSiteAdmins = async (top: number = 4): Promise<SiteUser[]> => {
+    const siteAdmins = await sp.web.siteUsers.filter(`IsSiteAdmin eq true`).select('Title', 'Email', 'LoginName').top(top).get();
+    return siteAdmins.map(sa => ({
+      title: sa.Title,
+      email: sa.Email,
+      loginName: sa.LoginName
+    }));
   }
 
   public getSiteSponsor = async (): Promise<SiteUser> => {
@@ -99,11 +160,13 @@ export class SiteService {
       Log.error(LOG_SOURCE, error);
     }
     finally {
+      Log.info(LOG_SOURCE, `getSiteSponsor() -> ${JSON.stringify(siteSponsor)}`);
       return siteSponsor;
     }
   }
 
   public setSiteSponsor = async (newSiteSponsorLoginName: string): Promise<SiteUser> => {
+    let newSiteSponsor: SiteUser = null;
     try {
       let siteSponsorItem = this._cachedSiteSponsorConfigItem;
       if (!siteSponsorItem) {
@@ -111,10 +174,14 @@ export class SiteService {
       }
 
       await this._setConfigListItem(siteSponsorItem.ID, newSiteSponsorLoginName);
-      return await this.getSiteSponsor();
+      newSiteSponsor = await this.getSiteSponsor();
     }
     catch (error) {
       Log.error(LOG_SOURCE, error);
+    }
+    finally {
+      Log.info(LOG_SOURCE, `setSiteSponsor(${newSiteSponsorLoginName}) -> ${JSON.stringify(newSiteSponsor)}`);
+      return newSiteSponsor;
     }
   }
 
@@ -130,18 +197,16 @@ export class SiteService {
       Log.error(LOG_SOURCE, error);
     }
     finally {
+      Log.info(LOG_SOURCE, `getUserRights() -> ${JSON.stringify(userRights)}`);
       return userRights;
     }
   }
 
-  public getSiteAdmins = async (): Promise<SiteAdmins> => {
+  public getPrimaryAdmin = async (): Promise<SiteUser> => {
+    let primaryAdmin: SiteUser = null;
     try {
-      const [ primarySiteAdminItem, allSiteAdmins ] = await Promise.all([
-        this._getConfigListItem(SITE_PRIMARY_ADMIN_ITEM_TITLE),
-        sp.web.siteUsers.filter(`IsSiteAdmin eq true`).select('Title', 'Email', 'LoginName').top(4).get()
-      ]);
+      const primarySiteAdminItem = await this._getConfigListItem(SITE_PRIMARY_ADMIN_ITEM_TITLE);
 
-      let primaryAdmin: SiteUser = null;
       if (primarySiteAdminItem) {
         const value = primarySiteAdminItem.Value;
         if (value && value.trim() !== "") {
@@ -154,40 +219,56 @@ export class SiteService {
         }
       }
 
-      return {
-        primaryAdmin,
-        allAdmins: allSiteAdmins.map(sa => ({
-          title: sa.Title,
-          email: sa.Email,
-          loginName: sa.LoginName
-        }))
-      };
+      return primaryAdmin;
     }
     catch (error){
       Log.error(LOG_SOURCE, error);
     }
+    finally {
+      Log.info(LOG_SOURCE, `getPrimaryAdmin() -> ${JSON.stringify(primaryAdmin)}`);
+      return primaryAdmin;
+    }
+  }
+
+  public getSiteAdminsOrGroupOwners = async (): Promise<SiteUser[]> => {
+    let adminsOrOwners: SiteUser[] = [];
+    try {
+      adminsOrOwners = this._isOffice365Group ? await this._getGroupOwners() : await this._getSiteAdmins();
+    }
+    catch (error){
+      Log.error(LOG_SOURCE, error);
+    }
+    finally {
+      Log.info(LOG_SOURCE, `getSiteAdminsOrGroupOwners() -> ${JSON.stringify(adminsOrOwners)}`);
+      return adminsOrOwners;
+    }
   }
 
   public getSiteStats = async (): Promise<SiteStats> => {
+    let siteStats: SiteStats = null;
     try {
       const site = await sp.site.select('Usage').get();
 
-      return {
+      siteStats = {
         storageUsedBytes: site.Usage.Storage,
         storageUsedPercentage: site.Usage.StoragePercentageUsed,
       };
     }
     catch (error){
       Log.error(LOG_SOURCE, error);
-      return null;
+    }
+    finally {
+      Log.info(LOG_SOURCE, `getSiteStats() -> ${JSON.stringify(siteStats)}`);
+      return siteStats;
     }
   }
 
   public getWebStats = async (): Promise<WebStats> => {
+    let webStats: WebStats = null;
     try {
       const web = await sp.web.select('Created', 'LastItemModifiedDate', 'Configuration', 'WebTemplate').get();
 
-      return {
+      webStats = {
         created: new Date(web.Created),
         lastUpdated: new Date(web.LastItemModifiedDate),
         webTemplate: `${web.WebTemplate}#${web.Configuration}`,
@@ -196,6 +277,10 @@ export class SiteService {
     catch (error){
       Log.error(LOG_SOURCE, error);
       return null;
+    }
+    finally {
+      Log.info(LOG_SOURCE, `getWebStats() -> ${JSON.stringify(webStats)}`);
+      return webStats;
     }
   }
 

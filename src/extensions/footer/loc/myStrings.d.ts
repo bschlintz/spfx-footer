@@ -7,10 +7,12 @@ declare interface IFooterApplicationCustomizerStrings {
   PeoplePickerPlaceholderText: string;
   PrimarySiteAdminLabel: string;
   SiteAdminsLabel: string;
+  GroupOwnersLabel: string;
   StorageLabel: string;
   CreatedLabel: string;
   LastUpdatedLabel: string;
   SiteTemplateLabel: string;
+  GroupIdLabel: string;
   SupportLabel: string;
   SupportLinkLabel: string;
 }
