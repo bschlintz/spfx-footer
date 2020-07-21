@@ -84,7 +84,7 @@ const SponsorField: React.FC<ISponsorField> = ({ siteService }) => {
 
       {(fieldMode === FieldMode.ReadOnly || fieldMode === FieldMode.CanEdit) && <>
         {siteSponsor
-          ? <Person loginNameOrUpn={siteSponsor.loginName} />
+          ? <Person user={siteSponsor} />
           : <span>{strings.EmptyFieldLabel}</span>
         }
       </>}
@@ -102,7 +102,7 @@ const SponsorField: React.FC<ISponsorField> = ({ siteService }) => {
           />
           <Stack horizontalAlign="end" horizontal>
             <IconButton iconProps={{iconName: "Cancel"}} onClick={onCancelClick} />
-            <IconButton iconProps={{iconName: "Save"}} onClick={onSaveClick} />
+            <IconButton iconProps={{iconName: "Accept"}} onClick={onSaveClick} />
           </Stack>
         </Stack>
       )}

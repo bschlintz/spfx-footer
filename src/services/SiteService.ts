@@ -7,7 +7,7 @@ import { UserRights } from '../models/UserRights';
 import { ConfigListItem } from '../models/ConfigListItem';
 import { AadHttpClient } from '@microsoft/sp-http';
 import { setup as pnpSetup } from "@pnp/common";
-import { sp } from "@pnp/sp";
+import { sp, PrincipalType } from "@pnp/sp";
 import { IWebEnsureUserResult } from "@pnp/sp/site-users/";
 import "@pnp/sp/site-users/";
 import "@pnp/sp/webs";
@@ -15,7 +15,6 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import { SiteStats } from '../models/SiteStats';
 import { WebStats } from '../models/WebStats';
-
 const CONFIG_LIST_TITLE = "SiteConfig";
 const SITE_SPONSOR_ITEM_TITLE = "SITE_SPONSOR";
 const SITE_PRIMARY_ADMIN_ITEM_TITLE = "SITE_PRIMARY_ADMIN";
@@ -116,11 +115,7 @@ export class SiteService {
 
       if (response.ok) {
         const result = await response.json();
-        return (result.value as any[]).map<SiteUser>(o => ({
-          email: o.mail,
-          loginName: o.userPrincipalName,
-          title: o.displayName
-        }));
+        return (result.value as any[]).map<SiteUser>(o => this._makeSiteUser(o.userPrincipalName, o.mail, o.displayName));
       }
       else throw new Error(await response.text());
     }
@@ -130,12 +125,17 @@ export class SiteService {
   }
 
   private _getSiteAdmins = async (top: number = 4): Promise<SiteUser[]> => {
-    const siteAdmins = await sp.web.siteUsers.filter(`IsSiteAdmin eq true`).select('Title', 'Email', 'LoginName').top(top).get();
-    return siteAdmins.map(sa => ({
-      title: sa.Title,
-      email: sa.Email,
-      loginName: sa.LoginName
-    }));
+    const siteAdmins = await sp.web.siteUsers.filter(`IsSiteAdmin eq true`).select('Title', 'Email', 'LoginName', 'PrincipalType').top(top).get();
+    return siteAdmins.map(sa => this._makeSiteUser(sa.LoginName, sa.Email, sa.Title, sa.PrincipalType));
+  }
+
+  private _makeSiteUser = (loginName: string, email?: string, title?: string, principalType?: PrincipalType): SiteUser => {
+    return {
+      loginName,
+      email: email || "",
+      title: title || "",
+      principalType: principalType || PrincipalType.User
+    };
   }
 
   public getSiteSponsor = async (): Promise<SiteUser> => {
@@ -147,11 +147,8 @@ export class SiteService {
         const value = this._cachedSiteSponsorConfigItem.Value;
         if (value && value.trim() !== "") {
           const siteSponsorUser: IWebEnsureUserResult = await sp.web.ensureUser(value);
-          siteSponsor = {
-            loginName: siteSponsorUser.data.LoginName,
-            email: siteSponsorUser.data.Email,
-            title: siteSponsorUser.data.Title
-          };
+          const { LoginName, Email, Title } = siteSponsorUser.data;
+          siteSponsor = this._makeSiteUser(LoginName, Email, Title);
           Log.info(LOG_SOURCE, `${SITE_SPONSOR_ITEM_TITLE} Ensured User: ${value}`);
         }
       }
@@ -211,11 +208,8 @@ export class SiteService {
         const value = primarySiteAdminItem.Value;
         if (value && value.trim() !== "") {
           const primaryAdminUser: IWebEnsureUserResult = await sp.web.ensureUser(value);
-          primaryAdmin = {
-            loginName: primaryAdminUser.data.LoginName,
-            email: primaryAdminUser.data.Email,
-            title: primaryAdminUser.data.Title
-          };
+          const { LoginName, Email, Title } = primaryAdminUser.data;
+          primaryAdmin = this._makeSiteUser(LoginName, Email, Title);
         }
       }
 
