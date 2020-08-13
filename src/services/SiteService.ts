@@ -208,8 +208,8 @@ export class SiteService {
         const value = primarySiteAdminItem.Value;
         if (value && value.trim() !== "") {
           const primaryAdminUser: IWebEnsureUserResult = await sp.web.ensureUser(value);
-          const { LoginName, Email, Title } = primaryAdminUser.data;
-          primaryAdmin = this._makeSiteUser(LoginName, Email, Title);
+          const { LoginName, Email, Title, PrincipalType } = primaryAdminUser.data;
+          primaryAdmin = this._makeSiteUser(LoginName, Email, Title, PrincipalType);
         }
       }
 

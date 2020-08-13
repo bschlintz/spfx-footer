@@ -3,7 +3,7 @@
   "solution": {
     "name": "Footer",
     "id": "aaa05580-eeba-48ac-800a-9fd424be334a",
-    "version": "1.2.1.0",
+    "version": "1.2.2.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -40,11 +40,11 @@
       }
     ],
     "developer": {
-      "name": "Contoso",
-      "privacyUrl": "https://contoso.com/privacy",
-      "termsOfUseUrl": "https://contoso.com/terms-of-use",
-      "websiteUrl": "https://contoso.com/my-app",
-      "mpnId": "000000"
+      "name": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "websiteUrl": "",
+      "mpnId": ""
     }
   },
   "paths": {
