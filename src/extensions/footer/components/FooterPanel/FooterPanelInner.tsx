@@ -49,7 +49,7 @@ const FooterPanelInner: React.FC<IFooterPanelInnerProps> = ({ siteService, suppo
       {/* Primary Site Admin */}
       <DisplayField label={strings.PrimarySiteAdminLabel} isLoading={isLoadingPrimaryAdmin}>
         {primaryAdmin
-          ? <Person user={primaryAdmin} />
+          ? <Person user={primaryAdmin} siteService={siteService} />
           : <span>{strings.EmptyFieldLabel}</span>
         }
       </DisplayField>
@@ -60,7 +60,7 @@ const FooterPanelInner: React.FC<IFooterPanelInnerProps> = ({ siteService, suppo
         hidden={isLoadingSiteAdminsOrGroupOwners || !siteAdminsOrGroupOwners || (siteAdminsOrGroupOwners && siteAdminsOrGroupOwners.length === 0)}
       >
         <Stack tokens={{ childrenGap: 6 }}>
-          {siteAdminsOrGroupOwners && siteAdminsOrGroupOwners.map(sa => <Person user={sa} />)}
+          {siteAdminsOrGroupOwners && siteAdminsOrGroupOwners.map(sa => <Person user={sa} siteService={siteService} />)}
         </Stack>
       </DisplayField>
 

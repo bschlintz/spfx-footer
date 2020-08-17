@@ -84,7 +84,7 @@ const SponsorField: React.FC<ISponsorField> = ({ siteService }) => {
 
       {(fieldMode === FieldMode.ReadOnly || fieldMode === FieldMode.CanEdit) && <>
         {siteSponsor
-          ? <Person user={siteSponsor} />
+          ? <Person user={siteSponsor} siteService={siteService} />
           : <span>{strings.EmptyFieldLabel}</span>
         }
       </>}

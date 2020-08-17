@@ -15,6 +15,7 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import { SiteStats } from '../models/SiteStats';
 import { WebStats } from '../models/WebStats';
+import { toUpn } from './Utils';
 const CONFIG_LIST_TITLE = "SiteConfig";
 const SITE_SPONSOR_ITEM_TITLE = "SITE_SPONSOR";
 const SITE_PRIMARY_ADMIN_ITEM_TITLE = "SITE_PRIMARY_ADMIN";
@@ -124,6 +125,43 @@ export class SiteService {
     }
   }
 
+  private _getPerson = async (siteUser: SiteUser): Promise<any> => {
+    try {
+      const client = await this._getGraphAadClient();
+      let headers: Headers = new Headers();
+      headers.set('Accept', 'application/json');
+      headers.set('Content-Type', 'application/json');
+      // Find users without EXO Mailboxes
+      // https://docs.microsoft.com/en-us/graph/people-example#types-of-results-included
+      headers.set('X-PeopleQuery-QuerySources', 'Mailbox,Directory');
+
+      const response = await client.get(
+        `https://graph.microsoft.com/v1.0/me/people?$search="${toUpn(siteUser.loginName)}"&$top=1&$filter=personType/class eq 'Person'`,
+         AadHttpClient.configurations.v1,
+         { headers }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        let person = null;
+        if (result.value && result.value.length > 0) {
+          person = result.value[0];
+        }
+        else {
+          person = {
+            displayName: siteUser.title || siteUser.loginName,
+            mail: siteUser.email,
+          };
+        }
+        return person;
+      }
+      else throw new Error(await response.text());
+    }
+    catch (error) {
+      throw new Error(`Unable to retrieve person with Login Name '${siteUser.loginName}'. Error: ${error}`);
+    }
+  }
+
   private _getSiteAdmins = async (top: number = 4): Promise<SiteUser[]> => {
     const siteAdmins = await sp.web.siteUsers.filter(`IsSiteAdmin eq true`).select('Title', 'Email', 'LoginName', 'PrincipalType').top(top).get();
     return siteAdmins.map(sa => this._makeSiteUser(sa.LoginName, sa.Email, sa.Title, sa.PrincipalType));
@@ -136,6 +174,20 @@ export class SiteService {
       title: title || "",
       principalType: principalType || PrincipalType.User
     };
+  }
+
+  public getPersonDetails = async (siteUser: SiteUser): Promise<any> => {
+    let person = null;
+    try {
+      person = this._getPerson(siteUser);
+    }
+    catch (error){
+      Log.error(LOG_SOURCE, error);
+    }
+    finally {
+      Log.info(LOG_SOURCE, `getPersonDetails() -> ${JSON.stringify(person)}`);
+      return person;
+    }
   }
 
   public getSiteSponsor = async (): Promise<SiteUser> => {
