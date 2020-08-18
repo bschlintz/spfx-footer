@@ -42,7 +42,7 @@ const FooterPanelInner: React.FC<IFooterPanelInnerProps> = ({ siteService, suppo
   } = useAsyncData<WebStats>(null, siteService.getWebStats, []);
 
   return (
-    <Stack tokens={{ childrenGap: 18 }} style={{ flex: 1 }}>
+    <Stack tokens={{ childrenGap: 12 }} style={{ flex: 1 }}>
       {/* Sponsor */}
       <SponsorField siteService={siteService} />
 

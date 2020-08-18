@@ -12,7 +12,7 @@ const DisplayField: React.FC<IDisplayFieldProps> = ({ label, isLoading, hidden, 
   <>
     {!hidden &&
       <Stack>
-        <Stack>
+        <Stack verticalAlign="center" style={{ minHeight: 32 }}>
           <strong>{label}</strong>
         </Stack>
         {isLoading

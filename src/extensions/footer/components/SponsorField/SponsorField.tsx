@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useState } from 'react';
-import styles from './SponsorField.module.scss';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { IconButton } from 'office-ui-fabric-react/lib/Button';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
@@ -69,7 +68,7 @@ const SponsorField: React.FC<ISponsorField> = ({ siteService }) => {
 
   return (
     <Stack>
-      <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.fieldControlHeader}>
+      <Stack horizontal verticalAlign="center" horizontalAlign="space-between" style={{ minHeight: 32 }}>
         <strong>{strings.SiteSponsorLabel}</strong>
         {fieldMode === FieldMode.CanEdit && (
           <Stack>
