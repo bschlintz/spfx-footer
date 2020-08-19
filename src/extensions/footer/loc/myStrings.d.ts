@@ -2,6 +2,7 @@ declare interface IFooterApplicationCustomizerStrings {
   FooterOpenPanelText: string;
   FooterPanelHeaderText: string;
   EmptyFieldLabel: string;
+  UnknownUserLabel: string;
   NoDataFieldLabel: string;
   SiteSponsorLabel: string;
   PeoplePickerPlaceholderText: string;

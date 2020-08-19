@@ -116,7 +116,10 @@ export class SiteService {
 
       if (response.ok) {
         const result = await response.json();
-        return (result.value as any[]).map<SiteUser>(o => this._makeSiteUser(o.userPrincipalName, o.mail, o.displayName));
+        return (result.value as any[]).map<SiteUser>(owner => {
+          const principalType = owner['@odata.type'] !== '#microsoft.graph.user' ? PrincipalType.SecurityGroup : PrincipalType.User;
+          return this._makeSiteUser(owner.userPrincipalName, owner.mail, owner.displayName, principalType);
+        });
       }
       else throw new Error(await response.text());
     }
@@ -167,12 +170,12 @@ export class SiteService {
     return siteAdmins.map(sa => this._makeSiteUser(sa.LoginName, sa.Email, sa.Title, sa.PrincipalType));
   }
 
-  private _makeSiteUser = (loginName: string, email?: string, title?: string, principalType?: PrincipalType): SiteUser => {
+  private _makeSiteUser = (loginName: string, email: string = '', title: string = '', principalType: PrincipalType | 'unknown' = 'unknown'): SiteUser => {
     return {
       loginName,
-      email: email || "",
-      title: title || "",
-      principalType: principalType || PrincipalType.User
+      email,
+      title,
+      principalType
     };
   }
 
@@ -198,10 +201,18 @@ export class SiteService {
       if (this._cachedSiteSponsorConfigItem) {
         const value = this._cachedSiteSponsorConfigItem.Value;
         if (value && value.trim() !== "") {
-          const siteSponsorUser: IWebEnsureUserResult = await sp.web.ensureUser(value);
-          const { LoginName, Email, Title } = siteSponsorUser.data;
-          siteSponsor = this._makeSiteUser(LoginName, Email, Title);
-          Log.info(LOG_SOURCE, `${SITE_SPONSOR_ITEM_TITLE} Ensured User: ${value}`);
+          let siteSponsorUser: IWebEnsureUserResult = null;
+          try {
+            Log.info(LOG_SOURCE, `[${SITE_SPONSOR_ITEM_TITLE}] Ensuring user '${value}'`);
+            siteSponsorUser = await sp.web.ensureUser(value);
+            const { LoginName, Email, Title, PrincipalType } = siteSponsorUser.data;
+            siteSponsor = this._makeSiteUser(LoginName, Email, Title, PrincipalType);
+          }
+          catch (error) {
+            Log.error(LOG_SOURCE, new Error(`[${SITE_SPONSOR_ITEM_TITLE}] Unable to ensure user '${value}'`));
+            Log.error(LOG_SOURCE, error);
+            siteSponsor = this._makeSiteUser(value);
+          }
         }
       }
     }
@@ -259,9 +270,18 @@ export class SiteService {
       if (primarySiteAdminItem) {
         const value = primarySiteAdminItem.Value;
         if (value && value.trim() !== "") {
-          const primaryAdminUser: IWebEnsureUserResult = await sp.web.ensureUser(value);
-          const { LoginName, Email, Title, PrincipalType } = primaryAdminUser.data;
-          primaryAdmin = this._makeSiteUser(LoginName, Email, Title, PrincipalType);
+          let primaryAdminUser: IWebEnsureUserResult = null;
+          try {
+            Log.info(LOG_SOURCE, `[${SITE_PRIMARY_ADMIN_ITEM_TITLE}] Ensuring user '${value}'`);
+            primaryAdminUser = await sp.web.ensureUser(value);
+            const { LoginName, Email, Title, PrincipalType } = primaryAdminUser.data;
+            primaryAdmin = this._makeSiteUser(LoginName, Email, Title, PrincipalType);
+          }
+          catch (error) {
+            Log.error(LOG_SOURCE, new Error(`[${SITE_PRIMARY_ADMIN_ITEM_TITLE}] Unable to ensure user '${value}'`));
+            Log.error(LOG_SOURCE, error);
+            primaryAdmin = this._makeSiteUser(value);
+          }
         }
       }
 

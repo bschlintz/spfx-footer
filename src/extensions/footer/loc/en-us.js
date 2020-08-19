@@ -3,6 +3,7 @@ define([], function() {
     "FooterOpenPanelText": "Site Summary",
     "FooterPanelHeaderText": "Site Summary",
     "EmptyFieldLabel": "None",
+    "UnknownUserLabel": "NOT FOUND",
     "NoDataFieldLabel": "No data available",
     "SiteSponsorLabel": "Sponsor",
     "PeoplePickerPlaceholderText": "Select a person...",
