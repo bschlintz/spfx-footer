@@ -10,6 +10,7 @@
           "location": "ClientSideExtension.ApplicationCustomizer",
           "properties": {
             "SiteSponsorEditorsAADGroupId": "00000000-0000-0000-0000-000000000000",
+            "DisableSiteSponsor": false,
             "CopyrightText": "Copyright © {current_year}",
             "SupportLink": ""
           }

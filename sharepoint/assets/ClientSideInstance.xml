@@ -4,6 +4,6 @@
         Title="Footer"
         Location="ClientSideExtension.ApplicationCustomizer"
         ComponentId="92e85838-8b3f-489e-9ef1-e892c880c2fa"
-        Properties="{&quot;SiteSponsorEditorsAADGroupId&quot;:&quot;00000000-0000-0000-0000-000000000000&quot;, &quot;CopyrightText&quot;: &quot;Copyright © {current_year}&quot;, &quot;SupportLink&quot;: &quot;&quot;}">
+        Properties="{&quot;SiteSponsorEditorsAADGroupId&quot;:&quot;00000000-0000-0000-0000-000000000000&quot;, &quot;DisableSiteSponsor&quot;: false, &quot;CopyrightText&quot;: &quot;Copyright © {current_year}&quot;, &quot;SupportLink&quot;: &quot;&quot;}">
     </ClientSideComponentInstance>
 </Elements>

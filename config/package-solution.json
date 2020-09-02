@@ -3,7 +3,7 @@
   "solution": {
     "name": "Footer",
     "id": "aaa05580-eeba-48ac-800a-9fd424be334a",
-    "version": "1.2.4.0",
+    "version": "1.3.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

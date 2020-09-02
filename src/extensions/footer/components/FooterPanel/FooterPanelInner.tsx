@@ -15,9 +15,10 @@ import { getWebTemplateFriendlyName } from '../../../../services/Utils';
 export interface IFooterPanelInnerProps {
   siteService: SiteService;
   supportLink: string;
+  disableSiteSponsor: boolean;
 }
 
-const FooterPanelInner: React.FC<IFooterPanelInnerProps> = ({ siteService, supportLink }) => {
+const FooterPanelInner: React.FC<IFooterPanelInnerProps> = ({ siteService, supportLink, disableSiteSponsor }) => {
   const isCurrentUserAnAdmin = siteService.spfxContext.pageContext.web.permissions.hasPermission(SPPermission.manageWeb as any);
   const isOffice365Group = !!siteService.spfxContext.pageContext.site.group;
 
@@ -44,7 +45,7 @@ const FooterPanelInner: React.FC<IFooterPanelInnerProps> = ({ siteService, suppo
   return (
     <Stack tokens={{ childrenGap: 12 }} style={{ flex: 1 }}>
       {/* Sponsor */}
-      <SponsorField siteService={siteService} />
+      {!disableSiteSponsor && <SponsorField siteService={siteService} />}
 
       {/* Primary Site Admin */}
       <DisplayField label={strings.PrimarySiteAdminLabel} isLoading={isLoadingPrimaryAdmin}>

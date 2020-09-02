@@ -9,9 +9,10 @@ export interface IFooterPanelProps {
   onCancelOrDismiss: () => void;
   siteService: SiteService;
   supportLink: string;
+  disableSiteSponsor: boolean;
 }
 
-const FooterPanel: React.FC<IFooterPanelProps> = ({ isOpen, onCancelOrDismiss, siteService, supportLink }) => {
+const FooterPanel: React.FC<IFooterPanelProps> = ({ isOpen, onCancelOrDismiss, siteService, supportLink, disableSiteSponsor }) => {
 
   return (
     <Panel
@@ -23,7 +24,7 @@ const FooterPanel: React.FC<IFooterPanelProps> = ({ isOpen, onCancelOrDismiss, s
       type={PanelType.custom}
       customWidth="380px"
     >
-      {isOpen && <FooterPanelInner siteService={siteService} supportLink={supportLink} />}
+      {isOpen && <FooterPanelInner siteService={siteService} supportLink={supportLink} disableSiteSponsor={disableSiteSponsor} />}
     </Panel>
   );
 };

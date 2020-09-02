@@ -10,9 +10,10 @@ export interface IFooterProps {
   siteService: SiteService;
   copyrightText: string;
   supportLink: string;
+  disableSiteSponsor: boolean;
 }
 
-const Footer: React.FC<IFooterProps> = ({ siteService, copyrightText, supportLink }) => {
+const Footer: React.FC<IFooterProps> = ({ siteService, copyrightText, supportLink, disableSiteSponsor }) => {
   const [isPanelOpen, setPanelOpen] = useState<boolean>(false);
 
   const onSiteSummaryClick = () => {
@@ -40,7 +41,7 @@ const Footer: React.FC<IFooterProps> = ({ siteService, copyrightText, supportLin
         <div> {/* RIGHT */}
         </div>
       </div>
-      <FooterPanel isOpen={isPanelOpen} onCancelOrDismiss={closePanel} siteService={siteService} supportLink={supportLink} />
+      <FooterPanel isOpen={isPanelOpen} onCancelOrDismiss={closePanel} siteService={siteService} supportLink={supportLink} disableSiteSponsor={disableSiteSponsor} />
     </>
   );
 };

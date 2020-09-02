@@ -14,6 +14,7 @@ export interface IFooterApplicationCustomizerProperties {
   SiteSponsorEditorsAADGroupId: string;
   CopyrightText: string;
   SupportLink: string;
+  DisableSiteSponsor: boolean;
 }
 
 export default class FooterApplicationCustomizer
@@ -67,7 +68,8 @@ export default class FooterApplicationCustomizer
     const footerProps: IFooterProps = {
       siteService: this._siteService,
       copyrightText: this.parseText(this.properties.CopyrightText),
-      supportLink: this.properties.SupportLink
+      supportLink: this.properties.SupportLink,
+      disableSiteSponsor: typeof(this.properties.DisableSiteSponsor) !== "undefined" ? this.properties.DisableSiteSponsor : false
     };
 
     const footerComponent = React.createElement(Footer, footerProps);
