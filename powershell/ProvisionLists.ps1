@@ -39,22 +39,3 @@ if (-not $list) {
   Add-PnPListItem -List $ConfigListTitle -Values @{"Title" = "SITE_PRIMARY_ADMIN"; "Value" = ""} | Out-Null
 
 }
-
-
-
-# To target all non-Site Owner assignments on list
-# $list = Get-PnPList -Identity $ConfigListTitle
-# $readRole = Get-PnPRoleDefinition -Identity Read
-# $roleAssignments = Get-PnPProperty -ClientObject $list -Property RoleAssignments
-
-# foreach ($ra in $roleAssignments) {
-#   $bindings = Get-PnPProperty -ClientObject $ra -Property RoleDefinitionBindings
-#   foreach ($bi in $bindings) {
-#     if ($bi.RoleTypeKind -ne "Administrator" -and $bi.RoleTypeKind -ne "Reader") {
-#       $ra.RoleDefinitionBindings.Remove($bi)
-#       $ra.RoleDefinitionBindings.Add($readRole)
-#     }
-#   }
-#   $ra.Update()
-#   $ra.Context.ExecuteQuery()
-# }
