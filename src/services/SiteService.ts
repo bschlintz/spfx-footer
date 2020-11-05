@@ -205,8 +205,8 @@ export class SiteService {
           try {
             Log.info(LOG_SOURCE, `[${SITE_SPONSOR_ITEM_TITLE}] Ensuring user '${value}'`);
             siteSponsorUser = await sp.web.ensureUser(value);
-            const { LoginName, Email, Title, PrincipalType } = siteSponsorUser.data;
-            siteSponsor = this._makeSiteUser(LoginName, Email, Title, PrincipalType);
+            const { LoginName, Email, Title, PrincipalType: _PrincipalType } = siteSponsorUser.data;
+            siteSponsor = this._makeSiteUser(LoginName, Email, Title, _PrincipalType);
           }
           catch (error) {
             Log.error(LOG_SOURCE, new Error(`[${SITE_SPONSOR_ITEM_TITLE}] Unable to ensure user '${value}'`));
@@ -274,8 +274,8 @@ export class SiteService {
           try {
             Log.info(LOG_SOURCE, `[${SITE_PRIMARY_ADMIN_ITEM_TITLE}] Ensuring user '${value}'`);
             primaryAdminUser = await sp.web.ensureUser(value);
-            const { LoginName, Email, Title, PrincipalType } = primaryAdminUser.data;
-            primaryAdmin = this._makeSiteUser(LoginName, Email, Title, PrincipalType);
+            const { LoginName, Email, Title, PrincipalType: _PrincipalType } = primaryAdminUser.data;
+            primaryAdmin = this._makeSiteUser(LoginName, Email, Title, _PrincipalType);
           }
           catch (error) {
             Log.error(LOG_SOURCE, new Error(`[${SITE_PRIMARY_ADMIN_ITEM_TITLE}] Unable to ensure user '${value}'`));
