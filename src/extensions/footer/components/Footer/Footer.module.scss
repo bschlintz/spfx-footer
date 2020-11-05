@@ -23,10 +23,9 @@ $FOOTER_HEIGHT: 30px;
   align-items: center;
   margin-left: 30px;
   padding: 0px 20px;
-  background: "[theme: primaryButtonBackground, default: #03787c]";
 
   &:hover {
-    background: "[theme: primaryButtonBackgroundHovered, default: #026d70]";
+    background: rgba(0, 0, 0, 0.1);
     cursor: pointer;
   }
 }

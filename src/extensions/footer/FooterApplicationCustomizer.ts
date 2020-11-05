@@ -15,6 +15,8 @@ export interface IFooterApplicationCustomizerProperties {
   CopyrightText: string;
   SupportLink: string;
   DisableSiteSponsor: boolean;
+  FooterBackgroundColor: string;
+  FooterForegroundColor: string;
 }
 
 export default class FooterApplicationCustomizer
@@ -69,7 +71,9 @@ export default class FooterApplicationCustomizer
       siteService: this._siteService,
       copyrightText: this.parseText(this.properties.CopyrightText),
       supportLink: this.properties.SupportLink,
-      disableSiteSponsor: typeof(this.properties.DisableSiteSponsor) !== "undefined" ? this.properties.DisableSiteSponsor : false
+      disableSiteSponsor: typeof(this.properties.DisableSiteSponsor) !== "undefined" ? this.properties.DisableSiteSponsor : false,
+      footerBackgroundColor: this.properties.FooterBackgroundColor,
+      footerForegroundColor: this.properties.FooterForegroundColor
     };
 
     const footerComponent = React.createElement(Footer, footerProps);
